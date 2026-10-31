@@ -19,7 +19,7 @@
 #include "ui/menu.h"
 #include "vk.h"
 
-enum { STICK_MAX = 32767, STICK_DEAD = 2500, STICK_DIR = 16384, TRIGGER_ON = 16384, RESCAN_MS = 1000 };
+enum { STICK_DIR = 16384, TRIGGER_ON = 16384, RESCAN_MS = 1000 };
 
 static SRWLOCK lock = SRWLOCK_INIT;
 static int state;                    // 0 not started, 1 running, -1 disabled or SDL failed
@@ -428,9 +428,32 @@ static void mouse_camera(int32_t out[2]) {
     out[1] = held[1];
 }
 
-static int32_t axis(int16_t v) {
-    int32_t a = v < -STICK_MAX ? -STICK_MAX : v;
-    return a > -STICK_DEAD && a < STICK_DEAD ? 0 : a;
+// TOTK_LSTICK_DEADZONE and TOTK_RSTICK_DEADZONE: the round dead zone of each gamepad stick in percent (0 to 50), read
+// again when a setting changed. Under lock.
+static double deadzone[2] = {-1, -1};   // -1 until first read, so the first value is logged
+static unsigned deadzone_seen = ~0u;
+
+static double deadzone_get(int stick) {
+    unsigned ver = cfg_version();
+    if (ver != deadzone_seen) {
+        deadzone_seen = ver;
+        static const char *const keys[2] = {"TOTK_LSTICK_DEADZONE", "TOTK_RSTICK_DEADZONE"};
+        for (int s = 0; s < 2; s++) {
+            double v = cfg_double(keys[s]);
+            double was = deadzone[s];
+            deadzone[s] = v < 0 ? 0 : v > 50 ? 50 : v;
+            if (deadzone[s] != was) rt_log("input: %s stick dead zone %.0f%%", s ? "right" : "left", deadzone[s]);
+        }
+    }
+    return deadzone[stick];
+}
+
+// Under lock: stick 0 (left) or 1 (right) of the open gamepad after its dead zone, up is +y.
+static void pad_stick(int stick, int32_t out[2]) {
+    int32_t x = SDL_GetGamepadAxis(pad, stick ? SDL_GAMEPAD_AXIS_RIGHTX : SDL_GAMEPAD_AXIS_LEFTX);
+    int32_t y = SDL_GetGamepadAxis(pad, stick ? SDL_GAMEPAD_AXIS_RIGHTY : SDL_GAMEPAD_AXIS_LEFTY);
+    input_stick_deadzone(x, y, deadzone_get(stick), out);
+    out[1] = -out[1];   // SDL: down is +y
 }
 
 // Open the first gamepad when none is open or the open one went away; logs once per change.
@@ -545,10 +568,8 @@ static int pad_read(uint64_t *b, int32_t sl[2], int32_t sr[2]) {
     uint8_t pd[PAD_COUNT] = {0};
     if (!pad_physical(pd)) return 0;
     *b |= input_map_pad_buttons(pd, pad_layout_get());
-    sl[0] = axis(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX));
-    sl[1] = -axis(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTY));
-    sr[0] = axis(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHTX));
-    sr[1] = -axis(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHTY));
+    pad_stick(0, sl);
+    pad_stick(1, sr);
     return 1;
 }
 
@@ -656,6 +677,21 @@ uint16_t rumble_motor(float a, float curve, float strength) {
 
 int input_pad_layout(void) {
     return (int)InterlockedCompareExchange(&pad_layout_shown, 0, 0);
+}
+
+int input_pad_stick_percent(double pct[2]) {
+    int ok = 0;
+    pct[0] = pct[1] = 0;
+    AcquireSRWLockExclusive(&lock);
+    if (state == 1 && pad && SDL_GamepadConnected(pad)) {   // the game's poll keeps the state fresh (SDL_UpdateGamepads)
+        pct[0] = input_stick_percent(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX),
+                                     SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTY));
+        pct[1] = input_stick_percent(SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHTX),
+                                     SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHTY));
+        ok = 1;
+    }
+    ReleaseSRWLockExclusive(&lock);
+    return ok;
 }
 
 int input_pad_label(int pad_id) {

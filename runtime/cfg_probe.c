@@ -261,6 +261,24 @@ int probe_cfg(void) {
     CHECK((int64_t)st[0] * st[0] + (int64_t)st[1] * st[1] <= 32768ll * 32768, "mouse: clamped to the unit circle");
     input_mouse_stick(30, 0, 1.0 / 60, 0, st);
     CHECK(st[0] == 0 && st[1] == 0, "mouse: sensitivity 0 is off");
+    // Gamepad stick dead zone (input_map.c)
+    input_stick_deadzone(3000, -2000, 15, st);
+    CHECK(st[0] == 0 && st[1] == 0, "dead zone: a drifting stick at 11% reads centred under 15%");
+    input_stick_deadzone(4000, 3000, 15, st);
+    CHECK(st[0] == 4000 && st[1] == 3000, "dead zone: 15.3% passes 15% unchanged, not rescaled");
+    input_stick_deadzone(2400, 2400, 8, st);
+    CHECK(st[0] == 2400 && st[1] == 2400, "dead zone: round, a slow diagonal keeps both axes");
+    input_stick_deadzone(5000, 1000, 8, st);
+    CHECK(st[0] == 5000 && st[1] == 1000, "dead zone: the small axis of a shallow angle is kept, not snapped to 0");
+    input_stick_deadzone(-32768, 32767, 50, st);
+    CHECK(st[0] == -32767 && st[1] == 32767, "dead zone: full deflection passes, -32768 reads as -32767");
+    input_stick_deadzone(300, 0, 0, st);
+    CHECK(st[0] == 300 && st[1] == 0, "dead zone: 0 is off");
+    input_stick_deadzone(300, 0, -5, st);
+    CHECK(st[0] == 300 && st[1] == 0, "dead zone: a negative value is off");
+    CHECK(input_stick_percent(32767, 0) > 99.99 && input_stick_percent(32767, 0) < 100.01 &&
+              input_stick_percent(0, 0) == 0,
+          "dead zone: an axis's end is 100%, the centre 0%");
     // Gamepad layouts (input_map.c)
     CHECK(input_pad_layout_pick("auto", 1) == PAD_LAYOUT_NINTENDO && input_pad_layout_pick(NULL, 0) == PAD_LAYOUT_XBOX,
           "pad layout: automatic is Nintendo for an east button labelled A, Xbox otherwise");

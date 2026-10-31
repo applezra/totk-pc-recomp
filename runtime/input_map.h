@@ -91,6 +91,12 @@ void input_map_stick(const uint8_t down[KEY_COUNT], int stick, int32_t out[2]);
 // Mouse motion in raw counts over dt_s seconds to right-stick deflection: full deflection at 3000 / sens counts/s.
 // Clamped to the unit circle, up (negative dy) is +y.
 void input_mouse_stick(int32_t dx, int32_t dy, double dt_s, float sens, int32_t out[2]);
+// A gamepad stick (x, y as SDL reads them, -32768..32767) through a round dead zone of pct percent of full deflection
+// (TOTK_LSTICK_DEADZONE, TOTK_RSTICK_DEADZONE; 0 or less is none): out is 0, 0 when the stick is closer to the centre
+// than that, else x, y unchanged (-32768 read as -32767), so the direction and the full range stay.
+void input_stick_deadzone(int32_t x, int32_t y, double pct, int32_t out[2]);
+// How far a stick is from the centre, in percent of full deflection (100 on an axis's end; a diagonal can read more).
+double input_stick_percent(int32_t x, int32_t y);
 
 // ---- the remapping rows' edits, on a copy of input_map. Pure.
 // action's keys (table order) / its gamepad buttons in layout, at most max; returns how many.

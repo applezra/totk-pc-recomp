@@ -149,6 +149,12 @@
 # pad_layout = auto
 # Mouse camera sensitivity (0 to 10; 0 = no mouse camera and no cursor capture).
 # mouse_sens = 1
+# Gamepad stick dead zones in percent of full deflection (0 to 50): a stick closer to the centre than this reads as
+# centred, which stops stick drift. Movement past it reaches the game unchanged. The Controls tab of the settings menu
+# (F1) shows each stick's deflection now, so a drifting stick's resting value can be read off. Changes while the game
+# runs take effect at once.
+# lstick_deadzone = 8
+# rstick_deadzone = 8
 # Write the input of this run to a file that replays as a script (docs/controls.md, "Scripted input"). Default: off.
 # input_record = input.txt
 # Remap buttons: the Controls tab of the settings menu (F1) writes these lines. One line per Switch button or stick

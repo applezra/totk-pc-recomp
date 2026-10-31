@@ -325,6 +325,22 @@ void input_mouse_stick(int32_t dx, int32_t dy, double dt_s, float sens, int32_t 
     out[1] = (int32_t)lrint(y);
 }
 
+double input_stick_percent(int32_t x, int32_t y) {
+    return sqrt((double)x * x + (double)y * y) * 100.0 / STICK_MAX;
+}
+
+// Round, not per axis: a per-axis dead zone zeroes the small axis of a slow diagonal, which bends it onto the large one,
+// and lets a worn stick that rests off-centre on both axes through on its own. Values outside the zone are not rescaled
+// from its edge, because the game applies its own dead zone and curve after this one: rescaled, the two would add up to
+// more than the setting says.
+void input_stick_deadzone(int32_t x, int32_t y, double pct, int32_t out[2]) {
+    x = x < -STICK_MAX ? -STICK_MAX : x > STICK_MAX ? STICK_MAX : x;
+    y = y < -STICK_MAX ? -STICK_MAX : y > STICK_MAX ? STICK_MAX : y;
+    int inside = pct > 0 && input_stick_percent(x, y) < pct;   // pct > 0 is false for NaN too
+    out[0] = inside ? 0 : x;
+    out[1] = inside ? 0 : y;
+}
+
 // Minus and Plus held together open or close the menu. *held: latched from the poll where both go down until neither is
 // down (the caller keeps it). Every poll of the latch reports neither to the game, so releasing one button first does not
 // leak the other; Minus alone before Plus reaches the game unchanged. With the menu open the game sees a neutral pad.

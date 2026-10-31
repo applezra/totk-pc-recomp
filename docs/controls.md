@@ -10,6 +10,8 @@ Input comes from the first SDL3 gamepad, the keyboard and the mouse, merged into
 
 The log names the layout in effect (`input: gamepad layout ...`); the menu shows it under *Automatic*. The game's button prompts stay Switch letters either way.
 
+`TOTK_LSTICK_DEADZONE` and `TOTK_RSTICK_DEADZONE` (`lstick_deadzone`, `rstick_deadzone`, the *Left/Right stick dead zone* rows on the Controls tab, live) are the dead zone of each gamepad stick in percent of full deflection (0 to 50, default 8). The zone is round: a stick closer to the centre than that, in any direction, reads as centred, and past it the stick reaches the game unchanged, neither rescaled from the zone's edge (the game applies its own dead zone and curve after this one) nor snapped to an axis. A stick that drifts (moves Link or the camera while untouched) needs a larger value: with a gamepad connected each row shows its stick's deflection now (*stick now*), so let go of the stick and set the row a few percent above the value it rests at. The log names the values in effect (`input: left stick dead zone 8%`). The dead zone applies to the menu's stick navigation too; keyboard, mouse camera and scripted input do not go through it.
+
 | Switch | Gamepad (by position, Nintendo layout) | Keyboard and mouse | Action in the world |
 |---|---|---|---|
 | Left stick | left stick | W A S D | move |
@@ -64,7 +66,7 @@ bind_Y = pad:north, key:mouse_l
 
 ## Mouse camera
 
-Mouse motion (raw input) becomes right-stick deflection. Each presented frame takes the counts moved since the last frame, divides by the frame time and sets the deflection to `counts per second * TOTK_MOUSE_SENS / 3000` of full, held for that frame, so the turn rate does not depend on the frame rate. This is not mouselook: the game's stick curve and dead zone still apply, so very slow movements do nothing and a fast flick saturates. The mouse deflection competes with the gamepad and arrow keys by the larger-deflection rule.
+Mouse motion (raw input) becomes right-stick deflection. Each presented frame takes the counts moved since the last frame, divides by the frame time and sets the deflection to `counts per second * TOTK_MOUSE_SENS / 3000` of full, held for that frame, so the turn rate does not depend on the frame rate. This is not mouselook: the game's stick curve and dead zone still apply (the gamepad dead zone above does not), so very slow movements do nothing and a fast flick saturates. The mouse deflection competes with the gamepad and arrow keys by the larger-deflection rule.
 
 `TOTK_MOUSE_SENS` (0 to 10, default 1; higher turns faster, 0 turns the mouse camera and the cursor capture off). While the window is the foreground window the cursor is hidden and confined to the client area. It is released on focus loss, minimise, while F11 changes the window, during a size or move loop and while a text entry is open. Esc releases it by hand: the cursor shows, the mouse camera and mouse buttons stop, and the window can be moved, minimised or closed. A mouse click inside the client area captures it again; that click does not reach the game. Activating the window by a click on its title bar or border does not capture, so it can be dragged or closed right away; Alt+Tab or a click in the client area captures as before. `TOTK_INPUT=none` disables the capture too.
 

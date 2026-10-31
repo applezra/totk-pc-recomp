@@ -57,6 +57,8 @@ typedef enum {
     UI_MENU_PAD_LAYOUT, UI_MENU_PAD_LAYOUT_DESC, UI_MENU_PAD_LAYOUT_AUTO, UI_MENU_PAD_LAYOUT_NINTENDO,
     UI_MENU_PAD_LAYOUT_XBOX, UI_MENU_PAD_LAYOUT_IN_USE,
     UI_MENU_MOUSE_SENS, UI_MENU_MOUSE_SENS_DESC,
+    UI_MENU_LSTICK_DEADZONE, UI_MENU_RSTICK_DEADZONE, UI_MENU_DEADZONE_DESC,
+    UI_MENU_DEADZONE_NOW,     // "stick now: %.0f %%": how far the stick is from the centre, before the dead zone
 
     // Controls tab: the remapping rows (ui/binds_page.cpp)
     UI_BINDS_HELP, UI_BINDS_COL_KEY1, UI_BINDS_COL_KEY2, UI_BINDS_COL_PAD,

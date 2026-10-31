@@ -99,6 +99,11 @@ static const char *const text_en[UI_TEXT_COUNT] = {
     [UI_MENU_PAD_LAYOUT_XBOX] = "Xbox (A bottom)", [UI_MENU_PAD_LAYOUT_IN_USE] = "in use: %s",
     [UI_MENU_MOUSE_SENS] = "Mouse camera sensitivity",
     [UI_MENU_MOUSE_SENS_DESC] = "How fast the mouse turns the camera.",
+    [UI_MENU_LSTICK_DEADZONE] = "Left stick dead zone", [UI_MENU_RSTICK_DEADZONE] = "Right stick dead zone",
+    [UI_MENU_DEADZONE_DESC] = "Stick movement smaller than this is ignored. Raise it if Link or the camera moves while "
+                              "you are not touching the stick (stick drift): let go of the stick, read \"stick now\" and "
+                              "set the dead zone a few percent above it. Higher values make small movements harder.",
+    [UI_MENU_DEADZONE_NOW] = "stick now: %.0f %%",
 
     [UI_BINDS_HELP] = "Select a cell and press A or Enter, then the key, mouse button or controller button. Delete or "
                       "X clears a cell. A key in use moves here; a controller button swaps with the one it replaces.",
@@ -316,6 +321,13 @@ static const char *const text_ru[UI_TEXT_COUNT] = {
     [UI_MENU_PAD_LAYOUT_XBOX] = "Xbox (A снизу)", [UI_MENU_PAD_LAYOUT_IN_USE] = "сейчас: %s",
     [UI_MENU_MOUSE_SENS] = "Чувствительность мыши",
     [UI_MENU_MOUSE_SENS_DESC] = "Как быстро мышь поворачивает камеру.",
+    [UI_MENU_LSTICK_DEADZONE] = "Мёртвая зона левого стика",
+    [UI_MENU_RSTICK_DEADZONE] = "Мёртвая зона правого стика",
+    [UI_MENU_DEADZONE_DESC] = "Отклонение стика меньше этого значения не учитывается. Увеличьте его, если Линк или камера "
+                              "двигаются, когда вы не трогаете стик (дрифт стика): отпустите стик, посмотрите «стик "
+                              "сейчас» и поставьте мёртвую зону на несколько процентов выше. Чем больше значение, тем "
+                              "труднее мелкие движения.",
+    [UI_MENU_DEADZONE_NOW] = "стик сейчас: %.0f %%",
 
     [UI_BINDS_HELP] = "Выберите ячейку и нажмите A или Enter, затем клавишу, кнопку мыши или кнопку контроллера. "
                       "Delete или X очищает ячейку. Занятая клавиша переходит сюда; кнопка контроллера меняется "
